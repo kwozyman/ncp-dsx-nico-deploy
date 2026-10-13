@@ -52,6 +52,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,format=short
+            type=raw,value=${{ github.sha }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -60,9 +72,8 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          tags: |
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:latest
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.image }}:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   core-images:
     runs-on: ubuntu-latest
@@ -118,6 +129,18 @@ jobs:
           echo "${{ secrets.REDHAT_ORG_ID }}" > /tmp/rhsm_org
           echo "${{ secrets.REDHAT_ACTIVATION_KEY }}" > /tmp/rhsm_activationkey
 
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_PREFIX }}/${{ matrix.image.name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha,format=short
+            type=raw,value=${{ github.sha }}
+            type=raw,value=latest,enable={{is_default_branch}}
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -129,6 +152,5 @@ jobs:
           secret-files: |
             rhsm_org=/tmp/rhsm_org
             rhsm_activationkey=/tmp/rhsm_activationkey
-          tags: |
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.image.name }}:latest
-            ${{ env.IMAGE_PREFIX }}/${{ matrix.image.name }}:${{ github.sha }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
