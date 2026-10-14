@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 Red Hat, Inc. All rights reserved.
 # SPDX-License-Identifier: Apache-2.0
+# simple modification
 
 .PHONY: check-prereqs bootstrap-cluster bootstrap-clean patch-vendor
 .PHONY: docker-build-ubi docker-push-ubi docker-build-core docker-push-core docker-build-nicocli docker-push-nicocli helm-dep-build helm-lint helm-template
